@@ -1,5 +1,7 @@
 # FlangeCalc
 
+![FlangeCalc](assets/screenshot_3.jpg)
+
 A Python-based engineering GUI application for calculating **bolted flange torque** and **hydraulic torque wrench pressure**.
 
 FlangeCalc was developed as a personal engineering project to simplify common bolted-flange calculations and provide a quick visual reference for torque and hydraulic pressure requirements.
@@ -20,13 +22,13 @@ FlangeCalc was developed as a personal engineering project to simplify common bo
 
 ## Screenshots
 
-*Screenshots will be added soon.*
+![FlangeCalc](assets/screenshot_2.jpg)
 
 ---
 
 ## Demo
 
-*Demo GIF will be added soon.*
+![FlangeCalc](assets/demo.gif)
 
 ---
 
@@ -67,6 +69,13 @@ python flangecalc.py
 ```text
 FlangeCalc/
 │
+├── assets/
+│   ├── demo.gif
+│   ├── icon.ico
+│   ├── screenshot_1.jpg
+│   ├── screenshot_2.jpg
+│   └── screenshot_3.jpg
+│
 ├── flangecalc.py       # Main GUI application
 ├── calculations.py     # Engineering calculations
 ├── htw_data.py         # Hydraulic torque wrench data and conversions
@@ -84,7 +93,7 @@ FlangeCalc/
 2. Enter the required bolt and gasket information.
 3. Select the required units.
 4. Calculate the required bolt torque.
-5. For hydraulic torque wrench applications, select the required wrench and hex size.
+5. For hydraulic torque wrench applications, select the brand, drive type, model and size.
 6. View the corresponding hydraulic pressure.
 7. Use the graphs to visualize the torque and pressure relationship.
 
