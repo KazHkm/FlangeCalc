@@ -101,7 +101,7 @@ FlangeCalc/
 
 ## Purpose
 
-FlangeCalc was created as a practical engineering tool based on experience with **flange management and bolted joint calculations**.
+FlangeCalc was created as a practical engineering tool based on experience with flange management and bolted joint calculations.
 
 The project also serves as a personal exercise in combining engineering calculations with Python GUI development.
 
