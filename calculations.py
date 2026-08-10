@@ -131,17 +131,17 @@ def calculate_torque(bolt_material, gasket_type, lubricant, bolt_size, unit_syst
     }
 
 
-def calculate_pressure(torque_nm, brand, model, hex_size):
+def calculate_pressure(torque_nm, brand, drive_type, model, hex_size):
     """
     Interpolate (or extrapolate, with a flag) the hydraulic pressure (bar)
-    required to achieve torque_nm on the given HTW brand/model/hex-size,
-    using linear interpolation against the vendor's Bar/Nm chart.
+    required to achieve torque_nm on the given HTW brand/drive-type/model/
+    drive-size, using linear interpolation against the vendor's Bar/Nm chart.
 
     Returns a dict: pressure (bar), table (the (pressure, torque) pairs
     used, for plotting), and out_of_range (True if torque_nm fell outside
     the chart and had to be extrapolated).
     """
-    table = get_table(brand, model, hex_size)
+    table = get_table(brand, drive_type, model, hex_size)
     pressures = np.array([p for p, t in table], dtype=float)
     torques = np.array([t for p, t in table], dtype=float)
 

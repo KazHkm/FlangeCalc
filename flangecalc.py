@@ -3,12 +3,16 @@ from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from calculations import calculate_torque, calculate_pressure
-from htw_data import (get_brands, get_models, get_hex_sizes, bar_to_psi, nm_to_lbft)
+from htw_data import (get_brands, get_drive_types, get_models, get_hex_sizes, bar_to_psi, nm_to_lbft)
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+ASSETS_DIR = BASE_DIR / "assets"
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-appWidth, appHeight = 1200, 800
+appWidth, appHeight = 1200, 870
 
 
 # App Class
@@ -23,6 +27,7 @@ class App(ctk.CTk):
 
         self.title("FlangeCalc")
         self.geometry(f"{appWidth}x{appHeight}")
+        self.iconbitmap(ASSETS_DIR / "icon.ico")
 
         # Grid layout (left = inputs, right = result, graph)
         self.grid_columnconfigure(0, weight=0)
@@ -135,7 +140,7 @@ class App(ctk.CTk):
         self.unit_combobox.pack(padx=20, pady=(0, 20), fill="x")
         self.unit_combobox.set("Imperial (lb-ft, lbf)")
 
-        # Hydraulic Torque Wrench selection (brand -> model -> hex size)
+        # Hydraulic Torque Wrench selection (brand -> drive type -> model -> drive size)
         self.htw_section_label = ctk.CTkLabel(self.left_frame,
                                               text='Hydraulic Torque Wrench (Bolt Size > 1")',
                                               font=("Arial", 13, "bold"),
@@ -156,26 +161,42 @@ class App(ctk.CTk):
         self.htwbrand_combobox.pack(padx=20, pady=(0, 4), fill="x")
         self.htwbrand_combobox.set(get_brands()[0])
 
+        self.htwdrivetype_label = ctk.CTkLabel(self.left_frame,
+                                               text="Drive Type",
+                                               font=("Arial", 12, "bold"),
+                                               anchor="w")
+        self.htwdrivetype_label.pack(padx=20, pady=(6, 2), fill="x")
+
+        initial_brand = get_brands()[0]
+        initial_drive_types = get_drive_types(initial_brand)
+        self.htwdrivetype_combobox = ctk.CTkComboBox(self.left_frame,
+                                                     values=initial_drive_types,
+                                                     width=200,
+                                                     command=self.on_drivetype_change)
+        self.htwdrivetype_combobox.pack(padx=20, pady=(0, 4), fill="x")
+        self.htwdrivetype_combobox.set(initial_drive_types[0])
+
         self.htwmodel_label = ctk.CTkLabel(self.left_frame,
                                            text="HTW Model",
                                            font=("Arial", 12, "bold"),
                                            anchor="w")
         self.htwmodel_label.pack(padx=20, pady=(6, 2), fill="x")
 
+        initial_models = get_models(initial_brand, initial_drive_types[0])
         self.htwmodel_combobox = ctk.CTkComboBox(self.left_frame,
-                                                 values=get_models(get_brands()[0]),
+                                                 values=initial_models,
                                                  width=200,
                                                  command=self.on_model_change)
         self.htwmodel_combobox.pack(padx=20, pady=(0, 4), fill="x")
-        self.htwmodel_combobox.set(get_models(get_brands()[0])[0])
+        self.htwmodel_combobox.set(initial_models[0])
 
         self.htwhex_label = ctk.CTkLabel(self.left_frame,
-                                         text="Hex Drive Size",
+                                         text="Drive Size",
                                          font=("Arial", 12, "bold"),
                                          anchor="w")
         self.htwhex_label.pack(padx=20, pady=(6, 2), fill="x")
 
-        initial_hex_sizes = get_hex_sizes(get_brands()[0], get_models(get_brands()[0])[0])
+        initial_hex_sizes = get_hex_sizes(initial_brand, initial_drive_types[0], initial_models[0])
         self.htwhex_combobox = ctk.CTkComboBox(self.left_frame,
                                                values=initial_hex_sizes,
                                                width=200)
@@ -263,14 +284,22 @@ class App(ctk.CTk):
         # HTW combobox chaining
 
     def on_brand_change(self, brand):
-        models = get_models(brand)
+        drive_types = get_drive_types(brand)
+        self.htwdrivetype_combobox.configure(values=drive_types)
+        self.htwdrivetype_combobox.set(drive_types[0])
+        self.on_drivetype_change(drive_types[0])
+
+    def on_drivetype_change(self, drive_type):
+        brand = self.htwbrand_combobox.get()
+        models = get_models(brand, drive_type)
         self.htwmodel_combobox.configure(values=models)
         self.htwmodel_combobox.set(models[0])
         self.on_model_change(models[0])
 
     def on_model_change(self, model):
         brand = self.htwbrand_combobox.get()
-        hex_sizes = get_hex_sizes(brand, model)
+        drive_type = self.htwdrivetype_combobox.get()
+        hex_sizes = get_hex_sizes(brand, drive_type, model)
         self.htwhex_combobox.configure(values=hex_sizes)
         self.htwhex_combobox.set(hex_sizes[0])
 
@@ -280,6 +309,7 @@ class App(ctk.CTk):
         state = "normal" if self.boltsize_combobox.get() in large_bolts else "disabled"
 
         self.htwbrand_combobox.configure(state=state)
+        self.htwdrivetype_combobox.configure(state=state)
         self.htwmodel_combobox.configure(state=state)
         self.htwhex_combobox.configure(state=state)
 
@@ -327,6 +357,7 @@ class App(ctk.CTk):
         unit_system = self.unit_combobox.get()
 
         htw_brand = self.htwbrand_combobox.get()
+        htw_drive_type = self.htwdrivetype_combobox.get()
         htw_model = self.htwmodel_combobox.get()
         htw_hex = self.htwhex_combobox.get()
 
@@ -352,6 +383,7 @@ class App(ctk.CTk):
             pressure_result = calculate_pressure(
                 result["torque_nm"],
                 htw_brand,
+                htw_drive_type,
                 htw_model,
                 htw_hex
             )
@@ -361,6 +393,7 @@ class App(ctk.CTk):
             pressure_30 = calculate_pressure(
                 result["torque_nm"] * 0.3,
                 htw_brand,
+                htw_drive_type,
                 htw_model,
                 htw_hex
             )
@@ -368,6 +401,7 @@ class App(ctk.CTk):
             pressure_60 = calculate_pressure(
                 result["torque_nm"] * 0.6,
                 htw_brand,
+                htw_drive_type,
                 htw_model,
                 htw_hex
             )
