@@ -112,10 +112,7 @@ The project also serves as a personal exercise in combining engineering calculat
 * Add hydraulic bolt tensioning calculation
 * Add more hydraulic torque wrench models
 * Expand bolt and gasket data
-* Add additional unit conversions
-* Improve calculation validation
 * Add calculation export/report functionality
-* Further improve the graphical interface
 
 ---
 
